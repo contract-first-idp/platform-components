@@ -4,4 +4,4 @@ metadata:
   name: workspace-preferences-configmap
   namespace: admin-devspaces
 data:
-  skip-authorization: '[]'
+  skip-authorisation: '[]'
