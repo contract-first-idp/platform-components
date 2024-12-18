@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: minio
+  namespace: {{ .Release.Namespace }}
+spec:
+  to:
+    name: minio-console
+    weight: 100
+    kind: Service
+  host: minio-minio.{{ .Values.clusterRouterDomain }}
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: passthrough
+  port:
+    targetPort: https-console
