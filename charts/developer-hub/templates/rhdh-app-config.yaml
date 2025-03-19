@@ -7,6 +7,14 @@ data:
     app:
       title: Contract-First IDP
       baseUrl: "https://backstage-backstage-developer-hub.{{ .Values.clusterRouterDomain }}"
+    mta:
+    url: https://mta-openshift-mta.apps.cluster-xvdzv.dynamic.redhatworkshops.io
+    backendPluginVersion: "0.3.0"
+    backendPluginRoot: "/opt/app-root/src/dynamic-plugins-root/backstage-community-backstage-plugin-mta-backend-0.3.0"
+    providerAuth:
+      realm: mta
+      secret: backstage-provider-secret
+      clientID: backstage-provider
     
     backend:
       auth:
