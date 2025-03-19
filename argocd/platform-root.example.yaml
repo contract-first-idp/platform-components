@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/contract-first-idp/platform-components.git
+    repoURL: https://github.com/rrbanda/platform-components.git
     path: argocd/platform-applications
     targetRevision: main
     helm:
