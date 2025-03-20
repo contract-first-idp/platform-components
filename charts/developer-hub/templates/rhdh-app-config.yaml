@@ -7,7 +7,15 @@ data:
     app:
       title: Contract-First IDP
       baseUrl: "https://backstage-backstage-developer-hub.{{ .Values.clusterRouterDomain }}"
-    
+    mta:
+      url: https://mta-openshift-mta.apps.cluster-xvdzv.dynamic.redhatworkshops.io
+      backendPluginVersion: "0.3.0"
+      backendPluginRoot: "/opt/app-root/src/dynamic-plugins-root/backstage-community-backstage-plugin-mta-backend-0.3.0"
+      providerAuth:
+        realm: mta
+        secret: backstage-provider-secret
+        clientID: backstage-provider
+      
     backend:
       auth:
         keys:
@@ -45,7 +53,7 @@ data:
             skipTLSVerify: true
           type: config
       customResources:
-        # to view the Tekton PipelineRuns list in the side panel
+        # to view the Tekton PipelineRun list in the side panel
         # and to view the latest PipelineRun status in the Topology node decorator:
         - group: 'tekton.dev'
           apiVersion: 'v1'
