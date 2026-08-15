@@ -1,0 +1,196 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: sonarqube-postgresql
+  namespace: sonarqube
+  labels:
+    app.kubernetes.io/component: primary
+    app.kubernetes.io/instance: sonarqube
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    helm.sh/chart: postgresql-10.15.0
+spec:
+  serviceName: sonarqube-postgresql-headless
+  revisionHistoryLimit: 10
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: data
+        creationTimestamp: null
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+  template:
+    metadata:
+      name: sonarqube-postgresql
+      labels:
+        app.kubernetes.io/component: primary
+        app.kubernetes.io/instance: sonarqube
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgresql
+        helm.sh/chart: postgresql-10.15.0
+        role: primary
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          terminationMessagePath: /dev/termination-log
+          name: init-chmod-data
+          command:
+            - /bin/sh
+            - '-cx'
+            - |
+              ls -altr /
+              whoami
+              chown 1000:0 /bitnami/postgresql
+              mkdir -p /bitnami/postgresql/data
+              chmod 700 /bitnami/postgresql/data
+              find /bitnami/postgresql -mindepth 1 -maxdepth 1 -not -name "conf" -not -name ".snapshot" -not -name "lost+found" | \
+                xargs chown -R 1000:0
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/postgresql
+            - name: dshm
+              mountPath: /dev/shm
+          terminationMessagePolicy: File
+          image: 'quay.io/sisense/bitnami-shell:10-debian-10-r404'
+      serviceAccountName: sonarqube-sonarqube
+      schedulerName: default-scheduler
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: primary
+                    app.kubernetes.io/instance: sonarqube
+                    app.kubernetes.io/name: postgresql
+                namespaces:
+                  - sonarqube
+                topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsUser: 0
+        allowPrivilegeEscalation: true
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 2Gi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-c'
+                - '-e'
+                - |
+                  exec pg_isready -U "sonarUser" -d "dbname=sonarDB" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 6
+          terminationMessagePath: /dev/termination-log
+          name: sonarqube-postgresql
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - '-c'
+                - exec pg_isready -U "sonarUser" -d "dbname=sonarDB" -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 6
+          env:
+            - name: BITNAMI_DEBUG
+              value: 'false'
+            - name: POSTGRESQL_PORT_NUMBER
+              value: '5432'
+            - name: POSTGRESQL_VOLUME_DIR
+              value: /bitnami/postgresql
+            - name: PGDATA
+              value: /bitnami/postgresql/data
+            - name: POSTGRES_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sonarqube-postgresql
+                  key: postgresql-postgres-password
+            - name: POSTGRES_USER
+              value: sonarUser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sonarqube-postgresql
+                  key: postgresql-password
+            - name: POSTGRES_DB
+              value: sonarDB
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: 'no'
+            - name: POSTGRESQL_ENABLE_TLS
+              value: 'no'
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: 'false'
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: 'false'
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: 'false'
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: 'off'
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: error
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: pgaudit
+          securityContext:
+            runAsUser: 1000
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+          terminationMessagePolicy: File
+          image: 'quay.io/norncity/bitnami-postgresql:11.14.0-debian-10-r0'
+      serviceAccount: sonarqube-sonarqube
+      automountServiceAccountToken: false
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+      dnsPolicy: ClusterFirst
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: sonarqube
+      app.kubernetes.io/name: postgresql
+      role: primary
