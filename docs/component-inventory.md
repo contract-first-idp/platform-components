@@ -17,7 +17,6 @@
 | Quay Bridge | Red Hat Operator | `stable-3.18` / 3.18.0 |
 | Microcks | Kustomize manifests | 1.14.0 |
 | Hawtio | Red Hat Operator | `v2` / 2.0.0 catalog build |
-| Apicurito | Community Operator, optional | `1.0.x` / 1.0.3 |
 | Kaoto Camel Designer | Dev Spaces extension | `redhat.vscode-kaoto` from Open VSX |
 
 CF-IDP runs this Keycloak instance in parallel with environment-owned identity infrastructure when
@@ -36,3 +35,9 @@ Dev Spaces uses the CF-IDP GitHub App client credentials for per-user GitHub aut
 does not receive the App private key used by Developer Hub automation. See
 [Installation](installation.md#configure-the-cf-idp-github-app) and
 [Validation](validation.md#github-app-integrations).
+
+## Integrated API Designer
+
+Apicurio Registry 3 includes Designer with draft-only mutability enabled. Finalized
+versions remain immutable and unrestricted deletion remains disabled. See
+[Designer authoring and compatibility](registry-designer.md).

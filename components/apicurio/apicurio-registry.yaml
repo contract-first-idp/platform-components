@@ -9,6 +9,8 @@ metadata:
     platform.contract-first.io/keycloak-host: cf-idp-keycloak-keycloak.invalid
 spec:
   app:
+    features:
+      versionMutabilityEnabled: true
     auth:
       enabled: true
       authServerUrl: https://cf-idp-keycloak-keycloak.invalid/realms/platform

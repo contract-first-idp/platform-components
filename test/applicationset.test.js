@@ -105,6 +105,7 @@ describe('platform ApplicationSet rendering', () => {
 
     const apicurio = renderWithRouterDomain(root, 'components/apicurio', domain)
       .find(resource => resource.kind === 'ApicurioRegistry3');
+    expect(apicurio.spec.app.features).toEqual({versionMutabilityEnabled: true});
     expect(apicurio.spec.app.ingress.host).toContain(domain);
     expect(apicurio.spec.app.auth.authServerUrl).toContain(domain);
 

@@ -55,7 +55,6 @@ spec:
     - {server: https://kubernetes.default.svc, namespace: external-secrets-operator}
     - {server: https://kubernetes.default.svc, namespace: cert-manager-operator}
     - {server: https://kubernetes.default.svc, namespace: cf-idp-keycloak}
-    - {server: https://kubernetes.default.svc, namespace: apicurio-designer}
   clusterResourceWhitelist:
     - {group: '', kind: Namespace}
   namespaceResourceWhitelist:
@@ -79,7 +78,6 @@ spec:
     - {server: https://kubernetes.default.svc, namespace: quay}
     - {server: https://kubernetes.default.svc, namespace: apicurio}
     - {server: https://kubernetes.default.svc, namespace: microcks}
-    - {server: https://kubernetes.default.svc, namespace: apicurio-designer}
     - {server: https://kubernetes.default.svc, namespace: hawtio}
     - {server: https://kubernetes.default.svc, namespace: tekton-tasks}
     - {server: https://kubernetes.default.svc, namespace: openshift-devspaces}
