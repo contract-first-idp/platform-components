@@ -6,6 +6,8 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: '-5'
 spec:
+  # Avoid startup API-discovery races after a cluster restart.
+  openshift: true
   postgresVersion: 16
   databaseInitSQL:
     name: apicurio-db-init
