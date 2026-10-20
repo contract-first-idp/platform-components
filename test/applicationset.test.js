@@ -90,6 +90,13 @@ describe('platform ApplicationSet rendering', () => {
     }
   });
 
+  test('Hawtio route hostname matches the public target contract', () => {
+    const target = YAML.parse(read(root, 'catalog-info.yaml')).spec.platform;
+    const hawtio = renderWithRouterDomain(root, 'components/hawtio', target.cluster.routerDomain)
+      .find(resource => resource.kind === 'Hawtio');
+    expect(hawtio.spec.routeHostName).toBe(target.services.hawtio.host);
+  });
+
   test('router-domain replacement connects identity and API services', () => {
     const domain = YAML.parse(read(root, 'catalog-info.yaml')).spec.platform.cluster.routerDomain;
     const keycloak = renderWithRouterDomain(root, 'components/keycloak', domain);

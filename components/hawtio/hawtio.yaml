@@ -3,7 +3,10 @@ kind: Hawtio
 metadata:
   name: hawtio-online
   namespace: hawtio
+  annotations:
+    platform.contract-first.io/router-domain: example.invalid
 spec:
+  routeHostName: hawtio.invalid
   type: Cluster
   replicas: 1
   auth:

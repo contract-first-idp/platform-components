@@ -3,3 +3,21 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - hawtio.yaml
+replacements:
+  - source:
+      group: hawt.io
+      version: v2
+      kind: Hawtio
+      name: hawtio-online
+      fieldPath: metadata.annotations.[platform.contract-first.io/router-domain]
+    targets:
+      - select:
+          group: hawt.io
+          version: v2
+          kind: Hawtio
+          name: hawtio-online
+        fieldPaths:
+          - spec.routeHostName
+        options:
+          delimiter: .
+          index: 1
