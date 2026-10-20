@@ -105,3 +105,31 @@ Secrets and Quay Bridge flow carries that token to the integration.
 `quay-activate` uses its own namespace-local ServiceAccount. Its Role can only get and patch the
 generated `registry-quay-app` Deployment. On an existing installation, the completed
 `quay-initialize` Job remains untouched and only the new activation Job runs.
+
+## Developer Hub initial migration recovery
+
+Let the first Developer Hub rollout complete before changing its configuration. An update during
+initial startup can overlap two backend pods against the same new database. In an observed RHDH
+1.10.5 installation this caused conflicting schema creation and a persistent `MigrationLocked`
+error. A subsequent single-pod restart still failed because the catalog database's
+`backstage_backend_public_keys__knex_migrations_lock` table contained two rows, both unlocked.
+This is an observed startup race, not evidence that every clean installation fails.
+
+Inspect the rollout and backend errors before attempting recovery:
+
+```bash
+oc get deployment,replicaset,pods -n developer-hub
+oc logs deployment/backstage-backstage -n developer-hub -c backstage-backend --tail=200
+```
+
+Identify the current and superseded ReplicaSets and ensure only the intended backend performs
+initialization. Check database activity to establish that no migration is running. Inspect the
+specific migration table named by the error: a genuinely held lock, a stale lock, and duplicate
+lock rows require different recovery. In the observed case, restoring the lock table's single-row
+invariant and restarting the backend allowed migrations and catalog startup to complete.
+
+Use version-appropriate database recovery with a backup and review of the affected rows. Do not
+add unconditional lock clearing to startup, delete application tables, or drop the database to
+resolve this symptom. Preserve credentials and application data. After recovery, repeat workload
+readiness, portal sign-in, catalog discovery, and Kubernetes integration checks from
+[Validation](validation.md).
